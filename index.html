@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeFi Portfolio</title>
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.0/css/bulma.min.css">
+</head>
+<body>
+    <section class="hero" align="center">
+        <div class="hero-body">
+          <h1 class="title">
+            Welcome to your DeFi Portfolio Tracker
+          </h1>
+          <p class="subtitle">
+           Please enter your <strong>Balancer Pool address</strong>!
+          </p>
+          <div class="field">
+            <div class="control">
+              <input class="input is-primary is-rounded" type="text" id="address" value="0x569771eCc10741302dFd4119249BA0e739144E97" placeholder="Enter your balancer pool address">
+            </div>
+          </div>
+        </div>
+      </section>
+      <div class="container">
+      <table class="table ml-5">
+          <thead>
+              <tr>
+                  <th>Token</th>
+                  <th>Price</th>
+                  <th>Portfolio %</th>
+                  <th>Current Balance</th>
+                  <th>Market Value</th>
+                  <th><abbr title="Percent Change in token balance vs 12 hours ago">-24H</abbr></th>
+                  <th><abbr title="Token Balance 24 hours ago">Balance</abbr></th>
+                  <th><abbr title="Token Price 24 hours ago">Price</abbr></th>
+                  <th><abbr title="Market Value 24 hours ago">MV</abbr></th>
+                  <th><abbr title="Percent Change in token balance vs 1 week ago">-1W</abbr></th>
+                  <th><abbr title="Market Value 1 week ago">MV</abbr></th>
+
+              </tr>
+          </thead>
+          <tbody>
+            <tr id="0"></tr>
+            <tr id="1"></tr>
+            <tr id="2"></tr>
+            <tr id="3"></tr>
+            <tr id="4"></tr>
+            <tr id="5"></tr>
+            <tr id="6"></tr>
+            <tr id="7"></tr>
+          </tbody>
+          <tfoot id="footer">
+
+          </tfoot>
+</table>
+</div>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src ="utils.js"></script>
+<script src ="index.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+</body>
+</html>
