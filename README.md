@@ -5,4 +5,4 @@ Then it gathers historical price data and historical balance data, from which it
 To view a list of balancer pools, check https://pools.balancer.exchange/#/
 
 ### Example Photo
-[Example](docs/web_example.png)
+![Example](docs/web_example.png)
