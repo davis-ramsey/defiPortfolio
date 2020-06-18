@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DeFi Portfolio</title>
-    
+    <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.0/css/bulma.min.css">
 </head>
 <body>
@@ -14,29 +14,29 @@
             Welcome to your DeFi Portfolio Tracker
           </h1>
           <p class="subtitle">
-           Please enter your <strong>Balancer Pool address</strong>!
+           Please enter your <strong>Balancer Pool</strong> address!
           </p>
           <div class="field">
             <div class="control">
-              <input class="input is-primary is-rounded" type="text" id="address" value="0x569771eCc10741302dFd4119249BA0e739144E97" placeholder="Enter your balancer pool address">
+              <input class="input is-primary is-rounded" type="text" id="address" placeholder="Enter your balancer pool address"/>
             </div>
           </div>
         </div>
       </section>
-      <div class="container">
-      <table class="table ml-5">
+      <div class="container is-hidden" id="table">
+      <table class="table ml-5 is-striped is-bordered is-hoverable">
           <thead>
               <tr>
                   <th>Token</th>
                   <th>Price</th>
-                  <th>Portfolio %</th>
-                  <th>Current Balance</th>
-                  <th>Market Value</th>
-                  <th><abbr title="Percent Change in token balance vs 12 hours ago">-24H</abbr></th>
-                  <th><abbr title="Token Balance 24 hours ago">Balance</abbr></th>
+                  <th>%</th>
+                  <th>Balance</th>
+                  <th><abbr title="Current Market Value">MV</abbr></th>
+                  <th><abbr title="Percent Change in portfolio value vs 24 hours ago">-24H</abbr></th>
                   <th><abbr title="Token Price 24 hours ago">Price</abbr></th>
                   <th><abbr title="Market Value 24 hours ago">MV</abbr></th>
-                  <th><abbr title="Percent Change in token balance vs 1 week ago">-1W</abbr></th>
+                  <th><abbr title="Percent Change in portfolio vs 1 week ago">-1W</abbr></th>
+                  <th><abbr title="Token Price 1 week ago">Price</abbr></th>
                   <th><abbr title="Market Value 1 week ago">MV</abbr></th>
 
               </tr>

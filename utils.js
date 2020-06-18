@@ -3,13 +3,12 @@ if (typeof web3 !== 'undefined') {
 	console.log('Web3 Detected! ' + web3.currentProvider.constructor.name);
 	window.web3 = new Web3(web3.currentProvider);
 } else {
-	//use infura if no metamask
-	console.log('No Web3 Detected... using HTTP Provider');
-	window.web3 = new Web3(
-		new Web3.providers.HttpProvider('https://mainnet.infura.io/v3/9fae5b9115104b5da6eabf0294102584')
-	);
+	document.querySelector(
+		'.subtitle'
+	).innerHTML = `Please install <a href="https://metamask.io/">metamask</a> before using this website.<br>Once installed, please refresh.`;
 }
 const debounce = (func, delay = 1000) => {
+	//wait for user to finish inputting their address
 	let timeoutId;
 	return (...args) => {
 		if (timeoutId) {
@@ -21,6 +20,7 @@ const debounce = (func, delay = 1000) => {
 	};
 };
 const minABI = [
+	//for web3 API calls
 	// balanceOf
 	{
 		constant: true,
@@ -39,6 +39,7 @@ const minABI = [
 	}
 ];
 function timeConverter(UNIX_timestamp) {
+	//for converting from timestamp to date for coingecko API historical prices
 	var a = new Date(UNIX_timestamp * 1000);
 	var months = [ '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12' ];
 	var year = a.getFullYear();
@@ -51,7 +52,7 @@ function timeConverter(UNIX_timestamp) {
 	return time;
 }
 getPool = function(address) {
-	//gets current token balances for selected balancer pool
+	//gets current token balances, addresses, and names for selected balancer pool
 	axios({
 		url: 'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer',
 		method: 'post',
@@ -77,6 +78,8 @@ getPool = function(address) {
 		}
 	})
 		.then(({ data }) => {
+			document.querySelector('.subtitle').innerHTML =
+				'<span class="has-text-success-dark">Gathering information...</span>';
 			const tokens = data.data.pools[0].tokens;
 			const weight = data.data.pools[0].totalWeight;
 			for (let element of tokens) {
@@ -89,10 +92,13 @@ getPool = function(address) {
 			getPrice();
 		})
 		.catch((err) => {
-			console.log(err);
+			document.querySelector('.subtitle').innerHTML =
+				'<span class="has-text-danger-dark">Error! Please enter a valid Balancer Pool address!</span>';
+			document.querySelector('#table').classList.add('is-hidden');
 		});
 };
 getPrice = function() {
+	//gets current prices for each token from coingecko API
 	for (let i = 0; i < tokenAddr.length; i++) {
 		axios({
 			url: `https://api.coingecko.com/api/v3/coins/ethereum/contract/${tokenAddr[i]}`
@@ -107,6 +113,7 @@ getPrice = function() {
 	}
 };
 getOldPrice = function() {
+	// gets historical prices for each token from coingecko API
 	for (let i = 0; i < tokenAddr.length; i++) {
 		axios({
 			url: `https://api.coingecko.com/api/v3/coins/${tokenId[i]}/history?date=${timeConverter(time)}`
@@ -120,6 +127,7 @@ getOldPrice = function() {
 	}
 };
 getTokenBalance = (address, day) => {
+	//gets historical token balances from web3 API via metamask
 	let sumTotal = 0;
 	//get token balances for the balancer pool
 	for (let i = 0; i < tokenAddr.length; i++) {
@@ -132,26 +140,22 @@ getTokenBalance = (address, day) => {
 				balance = balance.div(10 ** decimals);
 				sumTotal += tokenPrice[i] * parseFloat(balance).toFixed(2);
 				document.getElementById(day).innerHTML = `$${Number(sumTotal.toFixed(2)).toLocaleString()}`;
-				const difference = ((tokenBalance[i] / parseFloat(balance).toFixed(2) - 1) * 100).toFixed(2);
+				const difference = ((tokenMarketValue[i] / (tokenPrice[i] * parseFloat(balance)) - 1) * 100).toFixed(2);
 				if (parseFloat(balance).toFixed(0) > 0) {
 					if (difference < 0)
 						document.getElementById(
 							`${i}`
-						).innerHTML += `<td class="has-background-danger-light has-text-danger-dark">${difference}%</td><td class="has-background-danger-light has-text-danger-dark">${parseFloat(
-							balance
-						).toFixed(2)}</td><td>$${tokenPrice[i].toFixed(
-							4
-						)}</td><td class="has-background-primary-light has-text-success-dark">$${Number(
+						).innerHTML += `<td class="has-background-danger-light has-text-danger-dark">${difference}%</td><td>$${tokenPrice[
+							i
+						].toFixed(4)}</td><td class="has-background-danger-light has-text-danger-dark">$${Number(
 							(tokenPrice[i] * parseFloat(balance)).toFixed(2)
 						).toLocaleString()}</td>`;
 					else
 						document.getElementById(
 							`${i}`
-						).innerHTML += `<td class="has-background-primary-light has-text-success-dark">${difference}%</td><td class="has-background-primary-light has-text-success-dark">${parseFloat(
-							balance
-						).toFixed(2)}</td><td>$${tokenPrice[i].toFixed(
-							4
-						)}</td><td class="has-background-danger-light has-text-danger-dark">$${Number(
+						).innerHTML += `<td class="has-background-primary-light has-text-success-dark">${difference}%</td><td>$${tokenPrice[
+							i
+						].toFixed(4)}</td><td class="has-background-primary-light has-text-success-dark">$${Number(
 							(tokenPrice[i] * parseFloat(balance)).toFixed(2)
 						).toLocaleString()}</td>`;
 				}
@@ -173,28 +177,28 @@ getBlocks = function(address) {
 };
 
 printData = (bal, name, weight, price) => {
+	//displays data in a table
 	let sum = 0;
 	for (let i = 0; i < bal.length; i++) {
+		tokenMarketValue.push(Number((price[i] * bal[i]).toFixed(2)));
 		document.getElementById(`${i}`).innerHTML += `<td>${name[i]}</td><td>$${price[i].toFixed(4)}</td><td>${weight[
 			i
-		] * 2}%</td><td>${Number(bal[i]).toLocaleString()}</td><td>$${Number(
-			(price[i] * bal[i]).toFixed(4)
-		).toLocaleString()}`;
+		] * 2}%</td><td>${parseFloat(bal[i]).toFixed(2)}</td><td>$${tokenMarketValue[i].toLocaleString()}`;
 		sum += parseFloat((price[i] * bal[i]).toFixed(2));
 	}
 
 	document.getElementById('footer').innerHTML = `  <tr>
 	<th>Token</th>
 	<th>Price</th>
-	<th>Portfolio %</th>
-	<th>Current Balance</th>
-	<th><abbr title="Total Portfolio Market Value">$${Number(sum.toFixed(2)).toLocaleString()}</th>
-	<th><abbr title="Percent Change in token balance vs 12 hours ago">-24H</abbr></th>
-	<th><abbr title="Token Balance 24 hours ago">Balance</abbr></th>
+	<th>%</th>
+	<th>Balance</th>
+	<th><abbr title="Portfolio Market Value">$${Number(sum.toFixed(2)).toLocaleString()}</th>
+	<th><abbr title="Percent Change in portfolio value vs 24 hours ago">-24H</abbr></th>
 	<th><abbr title="Token Price 24 hours ago">Price</abbr></th>
-	<th><abbr title="Total Market Value 24 hours ago" id="dayTotal"></abbr></th>
-	<th><abbr title="Percent Change in token balance vs 1 week ago">-1W</abbr></th>
-	<th><abbr title="Total Market Value 1 week ago" id="weekTotal"></abbr></th>
+	<th><abbr title="Market Value 24 hours ago" id="dayTotal"></abbr></th>
+	<th><abbr title="Percent Change in portfolio vs 1 week ago">-1W</abbr></th>
+	<th><abbr title="Token Price 1 week ago">Price</abbr></th>
+	<th><abbr title="Market Value 1 week ago" id="weekTotal"></abbr></th>
 
 </tr>`;
 };
