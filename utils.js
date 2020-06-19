@@ -51,9 +51,9 @@ function timeConverter(UNIX_timestamp) {
 	var time = date + '-' + month + '-' + year;
 	return time;
 }
-getPool = function(address) {
+getPool = (address) => {
 	//gets current token balances, addresses, and names for selected balancer pool
-	axios({
+	return axios({
 		url: 'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer',
 		method: 'post',
 		data: {
@@ -76,31 +76,12 @@ getPool = function(address) {
     }
     `
 		}
-	})
-		.then(({ data }) => {
-			document.querySelector('.subtitle').innerHTML =
-				'<span class="has-text-success-dark">Gathering information...</span>';
-			const tokens = data.data.pools[0].tokens;
-			const weight = data.data.pools[0].totalWeight;
-			for (let element of tokens) {
-				tokenBalance.push(parseFloat(element.balance).toFixed(2));
-				tokenAddr.push(element.address);
-				tokenNames.push(element.symbol);
-				if (weight !== 50) tokenWeight.push((element.denormWeight * (50 / weight)).toFixed(2));
-				else tokenWeight.push(element.denormWeight);
-			}
-			getPrice();
-		})
-		.catch((err) => {
-			document.querySelector('.subtitle').innerHTML =
-				'<span class="has-text-danger-dark">Error! Please enter a valid Balancer Pool address!</span>';
-			document.querySelector('#table').classList.add('is-hidden');
-		});
+	});
 };
-getPrice = function() {
+getPrice = async function() {
 	//gets current prices for each token from coingecko API
 	for (let i = 0; i < tokenAddr.length; i++) {
-		axios({
+		await axios({
 			url: `https://api.coingecko.com/api/v3/coins/ethereum/contract/${tokenAddr[i]}`
 		})
 			.then((result) => {
@@ -111,6 +92,7 @@ getPrice = function() {
 				console.log(err);
 			});
 	}
+	//return Promise.resolve();
 };
 getOldPrice = function() {
 	// gets historical prices for each token from coingecko API
@@ -125,8 +107,9 @@ getOldPrice = function() {
 				console.log(err);
 			});
 	}
+	return Promise.resolve();
 };
-getTokenBalance = (address, day) => {
+getTokenBalance = async (address) => {
 	//gets historical token balances from web3 API via metamask
 	let sumTotal = 0;
 	//get token balances for the balancer pool
@@ -140,6 +123,9 @@ getTokenBalance = (address, day) => {
 				balance = balance.div(10 ** decimals);
 				sumTotal += tokenPrice[i] * parseFloat(balance).toFixed(2);
 				document.getElementById(day).innerHTML = `$${Number(sumTotal.toFixed(2)).toLocaleString()}`;
+				if (day === 'dayTotal')
+					document.getElementById('24h').innerHTML = `${((portfolioValue / sumTotal - 1) * 100).toFixed(2)}%`;
+				else document.getElementById('1W').innerHTML = `${((portfolioValue / sumTotal - 1) * 100).toFixed(2)}%`;
 				const difference = ((tokenMarketValue[i] / (tokenPrice[i] * parseFloat(balance)) - 1) * 100).toFixed(2);
 				if (parseFloat(balance).toFixed(0) > 0) {
 					if (difference < 0)
@@ -160,12 +146,19 @@ getTokenBalance = (address, day) => {
 						).toLocaleString()}</td>`;
 				}
 			});
+			if (
+				i + 1 === tokenAddr.length &&
+				day === 'dayTotal' //call functions to get weekly prices if it hasn't run yet
+			)
+				setTimeout(() => {
+					getWeek(address);
+				}, 1000);
 		});
 	}
 };
 getBlocks = function(address) {
 	//get block number from a timestamp
-	axios({
+	return axios({
 		url: `https://api.etherscan.io/api?module=block&action=getblocknobytime&timestamp=${time}&closest=before&apikey=${etherscanKey}`
 	})
 		.then((result) => {
@@ -186,17 +179,17 @@ printData = (bal, name, weight, price) => {
 		] * 2}%</td><td>${parseFloat(bal[i]).toFixed(2)}</td><td>$${tokenMarketValue[i].toLocaleString()}`;
 		sum += parseFloat((price[i] * bal[i]).toFixed(2));
 	}
-
+	portfolioValue = sum;
 	document.getElementById('footer').innerHTML = `  <tr>
 	<th>Token</th>
 	<th>Price</th>
 	<th>%</th>
 	<th>Balance</th>
-	<th><abbr title="Portfolio Market Value">$${Number(sum.toFixed(2)).toLocaleString()}</th>
-	<th><abbr title="Percent Change in portfolio value vs 24 hours ago">-24H</abbr></th>
+	<th><abbr title="Portfolio Market Value" id="value">$${Number(sum.toFixed(2)).toLocaleString()}</th>
+	<th><abbr title="Percent Change in portfolio value vs 24 hours ago" id="24h">-24H</abbr></th>
 	<th><abbr title="Token Price 24 hours ago">Price</abbr></th>
 	<th><abbr title="Market Value 24 hours ago" id="dayTotal"></abbr></th>
-	<th><abbr title="Percent Change in portfolio vs 1 week ago">-1W</abbr></th>
+	<th><abbr title="Percent Change in portfolio vs 1 week ago" id="1W">-1W</abbr></th>
 	<th><abbr title="Token Price 1 week ago">Price</abbr></th>
 	<th><abbr title="Market Value 1 week ago" id="weekTotal"></abbr></th>
 
