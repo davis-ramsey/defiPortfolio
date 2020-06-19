@@ -40,7 +40,7 @@ run = async (address) => {
 			const tokens = data.data.pools[0].tokens;
 			const weight = data.data.pools[0].totalWeight;
 			for (let element of tokens) {
-				tokenBalance.push(parseFloat(element.balance).toFixed(2));
+			 	 tokenBalance.push(parseFloat(element.balance).toFixed(2));
 				tokenAddr.push(element.address);
 				tokenNames.push(element.symbol);
 				if (weight !== 50) tokenWeight.push((element.denormWeight * (50 / weight)).toFixed(2));
