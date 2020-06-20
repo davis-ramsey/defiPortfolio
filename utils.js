@@ -152,7 +152,7 @@ getTokenBalance = async (address) => {
 			)
 				setTimeout(() => {
 					getWeek(address);
-				}, 1000);
+				}, 2000);
 		});
 	}
 };
